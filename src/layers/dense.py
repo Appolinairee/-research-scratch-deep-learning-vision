@@ -20,7 +20,7 @@ class Dense:
 
     def __post_init__(self) -> None:
         rng = np.random.default_rng(self.seed)
-        scale = np.sqrt(2.0 / max(1, self.input_dim + self.output_dim))
+        scale = np.sqrt(2.0 / max(1, self.input_dim))
         self.W = rng.normal(loc=0.0, scale=scale, size=(self.input_dim, self.output_dim))
         self.b = np.zeros(self.output_dim, dtype=float)
         self.dW = np.zeros_like(self.W)
