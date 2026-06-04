@@ -6,7 +6,6 @@ import numpy as np
 
 from src.core.types import Array
 
-
 @dataclass
 class Dense:
     input_dim: int

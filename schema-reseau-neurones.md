@@ -13,7 +13,7 @@ flowchart TD
   J --> G["Gradients"]
   G --> U1["Update de w"]
   G --> U2["Update de b"]
-  U1 -.-> W
+  U1 -.-> Wsur le deep learning
   U2 -.-> B
 ```
 
