@@ -36,10 +36,9 @@ class Dense:
 
         X = self._cached_X
         dZ = np.asarray(dZ, dtype=float)
-        batch_size = X.shape[0]
 
-        self.dW = (X.T @ dZ) / batch_size
-        self.db = np.sum(dZ, axis=0) / batch_size
+        self.dW = X.T @ dZ
+        self.db = np.sum(dZ, axis=0)
         dX = dZ @ self.W.T
         return dX
 
