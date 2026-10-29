@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import numpy as np
 
 from src.core.types import Array
@@ -11,13 +9,9 @@ from src.metrics.classification import binary_accuracy, multiclass_accuracy
 from src.models.sequential import Sequential
 from src.optim.sgd import SGD
 from src.training.single_neuron import build_batches
-
-
-@dataclass(frozen=True)
-class EpochMetrics:
-    epoch: int
-    loss: float
-    accuracy: float
+from src.evaluation.classification import evaluate_multiclass
+from src.training.history import EpochMetrics, TrainingHistory
+from src.regularization import L2Regularization
 
 
 def train_binary_classifier(
@@ -30,14 +24,14 @@ def train_binary_classifier(
     batch_size: int,
     shuffle: bool = True,
     seed: int | None = None,
-) -> list[EpochMetrics]:
+) -> TrainingHistory:
     if epochs <= 0:
         raise ValueError("epochs must be positive")
 
     X = np.asarray(X, dtype=float)
     y = np.asarray(y, dtype=float)
     rng = np.random.default_rng(seed)
-    history: list[EpochMetrics] = []
+    history = TrainingHistory()
 
     for epoch in range(epochs):
         batches = build_batches(X, y, batch_size=batch_size, rng=rng, shuffle=shuffle)
@@ -71,14 +65,21 @@ def train_multiclass_classifier(
     batch_size: int,
     shuffle: bool = True,
     seed: int | None = None,
-) -> list[EpochMetrics]:
+    validation_data: tuple[Array, Array] | None = None,
+    regularizer: L2Regularization | None = None,
+) -> TrainingHistory:
     if epochs <= 0:
         raise ValueError("epochs must be positive")
 
     X = np.asarray(X, dtype=float)
     y = np.asarray(y, dtype=float)
+    if validation_data is not None:
+        X_validation = np.asarray(validation_data[0], dtype=float)
+        y_validation = np.asarray(validation_data[1], dtype=float)
+    else:
+        X_validation = y_validation = None
     rng = np.random.default_rng(seed)
-    history: list[EpochMetrics] = []
+    history = TrainingHistory()
 
     for epoch in range(epochs):
         batches = build_batches(X, y, batch_size=batch_size, rng=rng, shuffle=shuffle)
@@ -88,14 +89,30 @@ def train_multiclass_classifier(
             loss.forward(y_batch, y_pred)
             dA = loss.backward()
             model.backward(dA)
+            if regularizer is not None:
+                regularizer.add_to_gradients(model)
             model.apply_gradients(optimizer.lr)
 
-        full_pred = model.forward(X)
+        train_metrics = evaluate_multiclass(model, X, y, loss)
+        train_loss = train_metrics.loss
+        if regularizer is not None:
+            train_loss += regularizer.penalty(model)
+        validation_metrics = None
+        if X_validation is not None and y_validation is not None:
+            validation_metrics = evaluate_multiclass(
+                model, X_validation, y_validation, loss
+            )
         history.append(
             EpochMetrics(
                 epoch=epoch,
-                loss=loss.forward(y, full_pred),
-                accuracy=multiclass_accuracy(y, full_pred),
+                loss=train_loss,
+                accuracy=train_metrics.accuracy,
+                validation_loss=(
+                    validation_metrics.loss if validation_metrics else None
+                ),
+                validation_accuracy=(
+                    validation_metrics.accuracy if validation_metrics else None
+                ),
             )
         )
 

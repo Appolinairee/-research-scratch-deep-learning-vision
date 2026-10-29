@@ -69,3 +69,38 @@ def test_multiclass_classifier_training_reduces_loss():
 
     assert history[0].loss > history[-1].loss
     assert history[-1].accuracy >= 0.95
+
+
+def test_multiclass_classifier_records_validation_metrics():
+    X = np.array([[-2.0, -1.0], [-1.5, -0.5], [1.0, 2.0], [1.5, 1.0]])
+    y = np.array(
+        [
+            [1.0, 0.0],
+            [1.0, 0.0],
+            [0.0, 1.0],
+            [0.0, 1.0],
+        ]
+    )
+    model = Sequential(
+        [
+            Dense(input_dim=2, output_dim=4, seed=0),
+            ReLU(),
+            Dense(input_dim=4, output_dim=2, seed=1),
+            Softmax(),
+        ]
+    )
+
+    history = train_multiclass_classifier(
+        model=model,
+        X=X,
+        y=y,
+        loss=MulticlassCrossEntropy(),
+        optimizer=SGD(lr=0.1),
+        epochs=3,
+        batch_size=4,
+        validation_data=(X, y),
+    )
+
+    assert len(history) == 3
+    assert history[-1].validation_loss is not None
+    assert history[-1].validation_accuracy is not None

@@ -11,6 +11,14 @@ from src.core.types import Array
 class Sequential:
     layers: list
 
+    @property
+    def trainable_layers(self) -> list:
+        return [
+            layer
+            for layer in self.layers
+            if hasattr(layer, "W") and hasattr(layer, "dW")
+        ]
+
     def forward(self, X: Array) -> Array:
         output = np.asarray(X, dtype=float)
         for layer in self.layers:
