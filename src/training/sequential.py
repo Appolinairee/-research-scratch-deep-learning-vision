@@ -11,6 +11,7 @@ from src.optim.sgd import SGD
 from src.training.single_neuron import build_batches
 from src.evaluation.classification import evaluate_multiclass
 from src.training.history import EpochMetrics, TrainingHistory
+from src.training.diagnostics import collect_diagnostics
 from src.regularization import L2Regularization
 
 
@@ -94,6 +95,7 @@ def train_multiclass_classifier(
             model.apply_gradients(optimizer.lr)
 
         train_metrics = evaluate_multiclass(model, X, y, loss)
+        diagnostics = collect_diagnostics(model)
         train_loss = train_metrics.loss
         if regularizer is not None:
             train_loss += regularizer.penalty(model)
@@ -113,6 +115,9 @@ def train_multiclass_classifier(
                 validation_accuracy=(
                     validation_metrics.accuracy if validation_metrics else None
                 ),
+                weight_norm=diagnostics.weight_norm,
+                gradient_norm=diagnostics.gradient_norm,
+                relu_zero_fraction=diagnostics.relu_zero_fraction,
             )
         )
 

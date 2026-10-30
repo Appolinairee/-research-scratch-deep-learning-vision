@@ -23,5 +23,10 @@ class ReLU:
         mask = (self._cached_input > 0.0).astype(float)
         return dA * mask
 
+    def zero_fraction(self) -> float:
+        if self._cached_input is None:
+            raise ValueError("forward must be called before reading diagnostics")
+        return float(np.mean(self._cached_input <= 0.0))
+
     def apply_gradients(self, lr: float) -> None:
         return None

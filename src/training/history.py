@@ -10,6 +10,9 @@ class EpochMetrics:
     accuracy: float
     validation_loss: float | None = None
     validation_accuracy: float | None = None
+    weight_norm: float | None = None
+    gradient_norm: float | None = None
+    relu_zero_fraction: float | None = None
 
 
 class TrainingHistory(list[EpochMetrics]):

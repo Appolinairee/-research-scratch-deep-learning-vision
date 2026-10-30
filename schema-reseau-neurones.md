@@ -169,3 +169,127 @@ dA^{[l-1]} = {W^{[l]}}^\top dZ^{[l]}
 $$
 
 Logistic regression correspond au cas $L = 1$.
+
+## Mini-batchs
+
+On découpe les $m$ exemples en lots de taille $B$ :
+
+$$
+\mathcal{B}_k \subset \{1,\dots,m\},
+\qquad
+|\mathcal{B}_k| = B
+$$
+
+Le gradient est calculé sur chaque lot :
+
+$$
+dW_{\mathcal{B}_k}^{[l]}
+= \frac{1}{B}\,dZ_{\mathcal{B}_k}^{[l]}
+{A_{\mathcal{B}_k}^{[l-1]}}^\top
+$$
+
+$$
+db_{\mathcal{B}_k}^{[l]}
+= \frac{1}{B}\sum_{i\in\mathcal{B}_k} dz_i^{[l]}
+$$
+
+Puis les paramètres sont mis à jour :
+
+$$
+W^{[l]} \leftarrow W^{[l]} - \eta\,dW_{\mathcal{B}_k}^{[l]}
+$$
+
+$$
+b^{[l]} \leftarrow b^{[l]} - \eta\,db_{\mathcal{B}_k}^{[l]}
+$$
+
+## Régularisation L2
+
+La fonction de coût régularisée pénalise les poids trop grands :
+
+$$
+J_{\mathrm{total}}
+= J_{\mathrm{classification}}
++ \frac{\lambda}{2}
+\sum_{l=1}^{L}\left\|W^{[l]}\right\|_F^2
+$$
+
+La pénalité ne s'applique pas aux biais :
+
+$$
+\frac{\partial J_{\mathrm{total}}}{\partial W^{[l]}}
+= dW^{[l]} + \lambda W^{[l]}
+$$
+
+$$
+\frac{\partial J_{\mathrm{total}}}{\partial b^{[l]}}
+= db^{[l]}
+$$
+
+## Fonctions d'activation
+
+```mermaid
+flowchart LR
+  ZH["Sortie couche cachée z"] --> R["ReLU"]
+  R --> AH["a = max(0, z)"]
+  ZL["Scores de sortie z"] --> S["Softmax"]
+  S --> P["Probabilités p"]
+  ZB["Score binaire z"] --> G["Sigmoïde"]
+  G --> PB["Probabilité p"]
+```
+
+### ReLU
+
+$$
+\operatorname{ReLU}(z)=\max(0,z)
+$$
+
+$$
+\operatorname{ReLU}'(z)=
+\begin{cases}
+0 & z \le 0\\
+1 & z > 0
+\end{cases}
+$$
+
+### Sigmoïde
+
+$$
+\sigma(z)=\frac{1}{1+e^{-z}}
+$$
+
+$$
+\sigma'(z)=\sigma(z)\left(1-\sigma(z)\right)
+$$
+
+### Softmax
+
+Pour $K$ classes :
+
+$$
+p_k=\operatorname{softmax}(z)_k
+=\frac{e^{z_k}}{\sum_{j=1}^{K}e^{z_j}}
+$$
+
+$$
+\sum_{k=1}^{K}p_k=1
+$$
+
+## Early stopping
+
+```mermaid
+flowchart TD
+  E["Fin d'une époque"] --> V["Calculer la loss validation"]
+  V --> B{"Amélioration ?"}
+  B -- Oui --> S["Sauvegarder le modèle"]
+  B -- Non --> P["Incrémenter patience"]
+  P --> L{"Patience atteinte ?"}
+  L -- Non --> E
+  L -- Oui --> R["Arrêter et restaurer le meilleur modèle"]
+```
+
+Avec une patience $p$ :
+
+$$
+\text{arrêt si aucune amélioration pendant }p\text{ époques}
+$$
