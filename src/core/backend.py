@@ -50,9 +50,8 @@ class NumpyBackend:
         return self.xp.sqrt(value)
 
     def random_normal(self, seed: int | None, scale: float, shape: Any) -> Any:
-        if seed is not None:
-            self.xp.random.seed(seed)
-        return self.xp.random.normal(loc=0.0, scale=scale, size=shape)
+        rng = self.xp.random.RandomState(seed)
+        return rng.normal(loc=0.0, scale=scale, size=shape)
 
     def is_array(self, value: Any) -> bool:
         return isinstance(value, self.xp.ndarray)

@@ -37,11 +37,17 @@ def test_dense_uses_selected_backend_for_forward_and_backward():
 
 
 def test_random_normal_uses_backend_generator_api():
+    class RandomState:
+        def __init__(self, seed):
+            self.seed = seed
+
+        def normal(self, loc, scale, size):
+            return np.full(size, scale)
+
     backend = NumpyBackend(
         xp=SimpleNamespace(
             random=SimpleNamespace(
-                seed=lambda seed: None,
-                normal=lambda loc, scale, size: np.full(size, scale)
+                RandomState=RandomState
             )
         )
     )
