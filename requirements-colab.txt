@@ -1,4 +1,4 @@
-cupy-cuda12x>=13.0
+cupy-cuda13x>=14.0
 torchvision>=0.17
 scikit-learn>=1.4
 tqdm>=4.66
