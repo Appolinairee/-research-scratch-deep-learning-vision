@@ -28,6 +28,8 @@ def train_binary_classifier(
 ) -> TrainingHistory:
     if epochs <= 0:
         raise ValueError("epochs must be positive")
+    if batch_size <= 0:
+        raise ValueError("batch_size must be positive")
 
     X = np.asarray(X, dtype=float)
     y = np.asarray(y, dtype=float)
@@ -72,18 +74,26 @@ def train_multiclass_classifier(
     if epochs <= 0:
         raise ValueError("epochs must be positive")
 
-    X = np.asarray(X, dtype=float)
-    y = np.asarray(y, dtype=float)
+    backend = model.backend
+    X = backend.asarray(X)
+    y = backend.asarray(y)
     if validation_data is not None:
-        X_validation = np.asarray(validation_data[0], dtype=float)
-        y_validation = np.asarray(validation_data[1], dtype=float)
+        X_validation = backend.asarray(validation_data[0])
+        y_validation = backend.asarray(validation_data[1])
     else:
         X_validation = y_validation = None
     rng = np.random.default_rng(seed)
     history = TrainingHistory()
 
     for epoch in range(epochs):
-        batches = build_batches(X, y, batch_size=batch_size, rng=rng, shuffle=shuffle)
+        sample_count = len(X)
+        indices = np.arange(sample_count)
+        if shuffle:
+            indices = rng.permutation(sample_count)
+        batches = []
+        for start in range(0, sample_count, batch_size):
+            batch_indices = indices[start:start + batch_size]
+            batches.append((X[batch_indices], y[batch_indices]))
 
         for X_batch, y_batch in batches:
             y_pred = model.forward(X_batch)

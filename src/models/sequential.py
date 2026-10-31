@@ -4,12 +4,20 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from src.core.backend import NumpyBackend
 from src.core.types import Array
 
 
 @dataclass
 class Sequential:
     layers: list
+
+    @property
+    def backend(self) -> NumpyBackend:
+        for layer in self.layers:
+            if hasattr(layer, "backend"):
+                return layer.backend
+        return NumpyBackend()
 
     @property
     def trainable_layers(self) -> list:
@@ -20,13 +28,13 @@ class Sequential:
         ]
 
     def forward(self, X: Array) -> Array:
-        output = np.asarray(X, dtype=float)
+        output = self.backend.asarray(X)
         for layer in self.layers:
             output = layer.forward(output)
         return output
 
     def backward(self, dA: Array) -> Array:
-        grad = np.asarray(dA, dtype=float)
+        grad = self.backend.asarray(dA)
         for layer in reversed(self.layers):
             grad = layer.backward(grad)
         return grad

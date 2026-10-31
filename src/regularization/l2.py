@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import numpy as np
-
 from src.models.sequential import Sequential
 
 
@@ -12,10 +10,13 @@ class L2Regularization:
         self.strength = float(strength)
 
     def penalty(self, model: Sequential) -> float:
-        return float(
+        return model.backend.scalar(
             0.5
             * self.strength
-            * sum(np.sum(layer.W**2) for layer in model.trainable_layers)
+            * sum(
+                model.backend.sum(layer.W**2)
+                for layer in model.trainable_layers
+            )
         )
 
     def add_to_gradients(self, model: Sequential) -> None:

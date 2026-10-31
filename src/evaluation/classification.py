@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-import numpy as np
-
 from src.core.types import Array
 from src.losses.multiclass_cross_entropy import MulticlassCrossEntropy
 from src.metrics.classification import multiclass_accuracy
@@ -22,8 +20,8 @@ def evaluate_multiclass(
     y: Array,
     loss: MulticlassCrossEntropy,
 ) -> ClassificationMetrics:
-    predictions = model.predict_proba(np.asarray(X, dtype=float))
+    predictions = model.predict_proba(model.backend.asarray(X))
     return ClassificationMetrics(
         loss=loss.forward(y, predictions),
-        accuracy=multiclass_accuracy(y, predictions),
+        accuracy=multiclass_accuracy(y, predictions, backend=model.backend),
     )
