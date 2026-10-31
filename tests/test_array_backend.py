@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from types import SimpleNamespace
 
 from src.core.backend import NumpyBackend, get_backend
 from src.activations import ReLU, Softmax
@@ -33,6 +34,23 @@ def test_dense_uses_selected_backend_for_forward_and_backward():
 
     assert backend.is_array(output)
     assert backend.is_array(layer.dW)
+
+
+def test_random_normal_uses_backend_generator_api():
+    class Generator:
+        def standard_normal(self, size):
+            return np.ones(size)
+
+    backend = NumpyBackend(
+        xp=SimpleNamespace(
+            random=SimpleNamespace(default_rng=lambda seed: Generator())
+        )
+    )
+
+    values = backend.random_normal(seed=0, scale=0.1, shape=(2, 3))
+
+    assert values.shape == (2, 3)
+    np.testing.assert_allclose(values, 0.1)
 
 
 def test_activation_and_loss_preserve_selected_backend():

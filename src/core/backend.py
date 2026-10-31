@@ -51,7 +51,7 @@ class NumpyBackend:
 
     def random_normal(self, seed: int | None, scale: float, shape: Any) -> Any:
         rng = self.xp.random.default_rng(seed)
-        return rng.normal(loc=0.0, scale=scale, size=shape)
+        return scale * rng.standard_normal(size=shape)
 
     def is_array(self, value: Any) -> bool:
         return isinstance(value, self.xp.ndarray)
