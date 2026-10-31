@@ -36,26 +36,19 @@ def test_dense_uses_selected_backend_for_forward_and_backward():
     assert backend.is_array(layer.dW)
 
 
-def test_random_normal_uses_backend_generator_api():
-    class RandomState:
-        def __init__(self, seed):
-            self.seed = seed
-
-        def normal(self, loc, scale, size):
-            return np.full(size, scale)
-
+def test_random_normal_generates_backend_array_without_cupy_random_api():
     backend = NumpyBackend(
         xp=SimpleNamespace(
-            random=SimpleNamespace(
-                RandomState=RandomState
-            )
+            asarray=np.asarray,
         )
     )
 
     values = backend.random_normal(seed=0, scale=0.1, shape=(2, 3))
+    expected = np.random.default_rng(0).normal(0.0, 0.1, size=(2, 3))
 
     assert values.shape == (2, 3)
-    np.testing.assert_allclose(values, 0.1)
+    assert values.dtype == float
+    np.testing.assert_allclose(values, expected)
 
 
 def test_activation_and_loss_preserve_selected_backend():
