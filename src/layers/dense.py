@@ -6,6 +6,7 @@ import numpy as np
 
 from src.core.backend import NumpyBackend
 from src.core.types import Array
+from src.optim import SGD
 
 @dataclass
 class Dense:
@@ -45,6 +46,21 @@ class Dense:
         dX = dZ @ self.W.T
         return dX
 
-    def apply_gradients(self, lr: float) -> None:
-        self.W = self.W - lr * self.dW
-        self.b = self.b - lr * self.db
+    def apply_gradients(
+        self,
+        optimizer: SGD | float | None = None,
+        *,
+        lr: float | None = None,
+    ) -> None:
+        if optimizer is None:
+            if lr is None:
+                raise TypeError("provide optimizer or lr")
+            optimizer = lr
+        elif lr is not None:
+            raise TypeError("provide optimizer or lr, not both")
+        if isinstance(optimizer, SGD):
+            self.W = optimizer.step(self.W, self.dW, state_key=(id(self), "W"))
+            self.b = optimizer.step(self.b, self.db, state_key=(id(self), "b"))
+            return
+        self.W = self.W - optimizer * self.dW
+        self.b = self.b - optimizer * self.db

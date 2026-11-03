@@ -44,7 +44,7 @@ def train_binary_classifier(
             loss.forward(y_batch, y_pred)
             dA = loss.backward()
             model.backward(dA)
-            model.apply_gradients(optimizer.lr)
+            model.apply_gradients(optimizer)
 
         full_pred = model.forward(X)
         history.append(

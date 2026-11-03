@@ -1,6 +1,7 @@
 import numpy as np
 
 from src.layers.dense import Dense
+from src.optim import SGD
 
 
 def _finite_difference_parameter_gradients(layer, X, dZ, epsilon=1e-6):
@@ -107,3 +108,17 @@ def test_dense_update_step_changes_parameters():
 
     assert not np.allclose(layer.W, original_W)
     assert not np.allclose(layer.b, original_b)
+
+
+def test_dense_can_apply_optimizer_momentum():
+    layer = Dense(input_dim=1, output_dim=1, seed=0)
+    layer.dW = np.array([[1.0]])
+    layer.db = np.array([1.0])
+    optimizer = SGD(lr=0.1, momentum=0.9)
+    initial_W = layer.W.copy()
+    initial_b = layer.b.copy()
+
+    layer.apply_gradients(optimizer)
+
+    np.testing.assert_allclose(layer.W, initial_W - 0.01)
+    np.testing.assert_allclose(layer.b, initial_b - 0.01)

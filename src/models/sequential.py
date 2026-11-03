@@ -6,6 +6,7 @@ import numpy as np
 
 from src.core.backend import NumpyBackend
 from src.core.types import Array
+from src.optim import SGD
 
 
 @dataclass
@@ -39,10 +40,10 @@ class Sequential:
             grad = layer.backward(grad)
         return grad
 
-    def apply_gradients(self, lr: float) -> None:
+    def apply_gradients(self, optimizer: SGD | float) -> None:
         for layer in self.layers:
             if hasattr(layer, "apply_gradients"):
-                layer.apply_gradients(lr)
+                layer.apply_gradients(optimizer)
 
     def predict_proba(self, X: Array) -> Array:
         return self.forward(X)

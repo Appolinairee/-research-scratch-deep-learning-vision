@@ -203,6 +203,67 @@ $$
 b^{[l]} \leftarrow b^{[l]} - \eta\,db_{\mathcal{B}_k}^{[l]}
 $$
 
+Une époque correspond à un passage complet sur toutes les images
+d'entraînement. Avec 45 000 images et des lots de 100, elle comporte
+450 mises à jour des paramètres.
+
+## Momentum
+
+Le momentum conserve une vitesse propre à chaque paramètre. Cette mémoire
+accumule les gradients successifs et réduit les oscillations pendant
+l'optimisation.
+
+Pour chaque poids ou biais :
+
+$$
+v_t = \beta v_{t-1} + (1-\beta)g_t
+$$
+
+$$
+\theta_t = \theta_{t-1} - \eta v_t
+$$
+
+où $g_t$ est le gradient courant, $\eta$ le taux d'apprentissage et
+$\beta \in [0,1)$ le coefficient de momentum, souvent fixé à $0{,}9$.
+La vitesse est initialisée à zéro.
+
+Chaque paramètre possède sa propre mémoire : les éléments d'une matrice ne
+partagent donc pas une seule valeur de vitesse. Les gradients récents ont le
+poids $(1-\beta)$, tandis que les gradients plus anciens sont pondérés par
+des puissances successives de $\beta$ :
+
+$$
+v_t = (1-\beta)\sum_{k=0}^{t-1}\beta^k g_{t-k}
+$$
+
+Le momentum ne change pas la fonction du réseau ni la rétropropagation ; il
+modifie uniquement la règle de mise à jour des paramètres.
+
+## Learning rate adaptatif
+
+On surveille la perte de validation :
+
+$$
+\text{si la validation stagne pendant }p\text{ époques,}\qquad
+\eta \leftarrow \max(f\eta,\eta_{\min})
+$$
+
+Ici, $p$ est la patience, $f$ le facteur de réduction et $\eta_{\min}$
+le learning rate minimal.
+
+## Dropout
+
+Le dropout est une couche ajoutée entre deux couches existantes, par exemple
+après une activation ReLU. Pendant l'entraînement, elle met aléatoirement à
+zéro une fraction $r$ des activations :
+
+$$
+\tilde{a}=\frac{m\odot a}{1-r},
+\qquad m_j\sim\mathrm{Bernoulli}(1-r)
+$$
+
+Le dropout est désactivé pendant la validation et le test.
+
 ## Régularisation L2
 
 La fonction de coût régularisée pénalise les poids trop grands :
