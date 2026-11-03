@@ -87,6 +87,7 @@ def train_multiclass_classifier(
     history = TrainingHistory()
 
     for epoch in range(epochs):
+        model.train()
         sample_count = len(X)
         indices = np.arange(sample_count)
         if shuffle:
@@ -105,6 +106,7 @@ def train_multiclass_classifier(
                 regularizer.add_to_gradients(model)
             model.apply_gradients(optimizer.lr)
 
+        model.eval()
         train_metrics = evaluate_multiclass(model, X, y, loss)
         diagnostics = collect_diagnostics(model)
         train_loss = train_metrics.loss

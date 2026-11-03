@@ -12,6 +12,7 @@ from src.optim import SGD
 @dataclass
 class Sequential:
     layers: list
+    training: bool = True
 
     @property
     def backend(self) -> NumpyBackend:
@@ -31,8 +32,16 @@ class Sequential:
     def forward(self, X: Array) -> Array:
         output = self.backend.asarray(X)
         for layer in self.layers:
+            if hasattr(layer, "set_training"):
+                layer.set_training(self.training)
             output = layer.forward(output)
         return output
+
+    def train(self) -> None:
+        self.training = True
+
+    def eval(self) -> None:
+        self.training = False
 
     def backward(self, dA: Array) -> Array:
         grad = self.backend.asarray(dA)
@@ -46,6 +55,7 @@ class Sequential:
                 layer.apply_gradients(optimizer)
 
     def predict_proba(self, X: Array) -> Array:
+        self.eval()
         return self.forward(X)
 
     def predict(self, X: Array, threshold: float = 0.5) -> Array:
