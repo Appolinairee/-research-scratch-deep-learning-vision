@@ -104,7 +104,7 @@ def train_multiclass_classifier(
             model.backward(dA)
             if regularizer is not None:
                 regularizer.add_to_gradients(model)
-            model.apply_gradients(optimizer.lr)
+            model.apply_gradients(optimizer)
 
         model.eval()
         train_metrics = evaluate_multiclass(model, X, y, loss)

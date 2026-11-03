@@ -27,3 +27,22 @@ def test_training_applies_scheduler_to_validation_loss():
     )
 
     assert optimizer.lr <= 0.1
+
+
+def test_training_uses_optimizer_state_for_momentum():
+    X = np.array([[1.0, 0.0], [0.0, 1.0]])
+    y = np.array([[1.0, 0.0], [0.0, 1.0]])
+    model = Sequential([Dense(2, 2, seed=0), Softmax()])
+    optimizer = SGD(lr=0.1, momentum=0.9)
+
+    train_multiclass_classifier(
+        model=model,
+        X=X,
+        y=y,
+        loss=MulticlassCrossEntropy(),
+        optimizer=optimizer,
+        epochs=1,
+        batch_size=2,
+    )
+
+    assert len(optimizer._velocities) == 2
