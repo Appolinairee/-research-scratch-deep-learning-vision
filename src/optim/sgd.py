@@ -25,7 +25,7 @@ def _array_module(value: Array) -> object:
     raise TypeError(f"unsupported array type: {type(value)!r}")
 
 
-@dataclass(frozen=True)
+@dataclass
 class SGD:
     lr: float
     momentum: float = 0.0

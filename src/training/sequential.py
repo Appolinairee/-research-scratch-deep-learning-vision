@@ -7,7 +7,7 @@ from src.losses.binary_cross_entropy import BinaryCrossEntropy
 from src.losses.multiclass_cross_entropy import MulticlassCrossEntropy
 from src.metrics.classification import binary_accuracy, multiclass_accuracy
 from src.models.sequential import Sequential
-from src.optim.sgd import SGD
+from src.optim import ReduceLROnPlateau, SGD
 from src.training.single_neuron import build_batches
 from src.evaluation.classification import evaluate_multiclass
 from src.training.history import EpochMetrics, TrainingHistory
@@ -70,6 +70,7 @@ def train_multiclass_classifier(
     seed: int | None = None,
     validation_data: tuple[Array, Array] | None = None,
     regularizer: L2Regularization | None = None,
+    scheduler: ReduceLROnPlateau | None = None,
 ) -> TrainingHistory:
     if epochs <= 0:
         raise ValueError("epochs must be positive")
@@ -114,6 +115,8 @@ def train_multiclass_classifier(
             validation_metrics = evaluate_multiclass(
                 model, X_validation, y_validation, loss
             )
+            if scheduler is not None:
+                scheduler.step(validation_metrics.loss, optimizer)
         history.append(
             EpochMetrics(
                 epoch=epoch,
