@@ -92,12 +92,10 @@ def train_multiclass_classifier(
         indices = np.arange(sample_count)
         if shuffle:
             indices = rng.permutation(sample_count)
-        batches = []
         for start in range(0, sample_count, batch_size):
             batch_indices = indices[start:start + batch_size]
-            batches.append((X[batch_indices], y[batch_indices]))
-
-        for X_batch, y_batch in batches:
+            X_batch = X[batch_indices]
+            y_batch = y[batch_indices]
             y_pred = model.forward(X_batch)
             loss.forward(y_batch, y_pred)
             dA = loss.backward()
@@ -107,7 +105,9 @@ def train_multiclass_classifier(
             model.apply_gradients(optimizer)
 
         model.eval()
-        train_metrics = evaluate_multiclass(model, X, y, loss)
+        train_metrics = evaluate_multiclass(
+            model, X, y, loss, batch_size=batch_size
+        )
         diagnostics = collect_diagnostics(model)
         train_loss = train_metrics.loss
         if regularizer is not None:
@@ -115,7 +115,7 @@ def train_multiclass_classifier(
         validation_metrics = None
         if X_validation is not None and y_validation is not None:
             validation_metrics = evaluate_multiclass(
-                model, X_validation, y_validation, loss
+                model, X_validation, y_validation, loss, batch_size=batch_size
             )
             if scheduler is not None:
                 scheduler.step(validation_metrics.loss, optimizer)

@@ -46,3 +46,22 @@ def test_training_uses_optimizer_state_for_momentum():
     )
 
     assert len(optimizer._velocities) == 2
+
+
+def test_training_evaluates_in_batches():
+    X = np.eye(4)
+    y = np.eye(4)
+    model = Sequential([Dense(4, 4, seed=0), Softmax()])
+
+    history = train_multiclass_classifier(
+        model=model,
+        X=X,
+        y=y,
+        loss=MulticlassCrossEntropy(),
+        optimizer=SGD(lr=0.1),
+        epochs=1,
+        batch_size=2,
+        validation_data=(X, y),
+    )
+
+    assert len(history) == 1
