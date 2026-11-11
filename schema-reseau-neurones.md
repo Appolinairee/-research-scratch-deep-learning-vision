@@ -354,3 +354,41 @@ Avec une patience $p$ :
 $$
 \text{arrêt si aucune amélioration pendant }p\text{ époques}
 $$
+
+## Optimiseur Adam
+
+Adam n'est pas simplement un SGD avec momentum. Il combine :
+
+- une moyenne mobile du gradient ;
+- une moyenne mobile du carré du gradient ;
+- une correction de biais pour les deux moments.
+
+Pour le gradient $g_t$ :
+
+$$
+m_t = \beta_1 m_{t-1} + (1-\beta_1)g_t
+$$
+
+$$
+v_t = \beta_2 v_{t-1} + (1-\beta_2)g_t^2
+$$
+
+Les moments sont corrigés du biais initial :
+
+$$
+\hat{m}_t = \frac{m_t}{1-\beta_1^t},
+\qquad
+\hat{v}_t = \frac{v_t}{1-\beta_2^t}
+$$
+
+La mise à jour devient :
+
+$$
+\theta_t =
+\theta_{t-1}
+- \eta_t\frac{\hat{m}_t}{\sqrt{\hat{v}_t}+\epsilon}
+$$
+
+Pour reproduire le protocole de l'article NSL-KDD, Adam est configuré avec
+$\eta=10^{-4}$ et un decay de $0{,}004$. Cette implémentation est distincte
+de `SGD` et dispose de tests dédiés.
