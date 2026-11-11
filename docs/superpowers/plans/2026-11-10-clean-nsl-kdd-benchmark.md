@@ -18,6 +18,26 @@
 - Do not use the test set for model or hyperparameter selection.
 - Preserve the shared `setup_colab.ipynb` bootstrap.
 
+## Article protocol gaps to close before the benchmark
+
+- [x] Implement a tested Adam optimizer with bias-corrected first and second
+  moments.
+- [x] Support the article learning-rate decay parameter (`decay=0.004`).
+- [ ] Use Adam rather than SGD for the NSL-KDD cross-entropy baseline.
+- [ ] Keep the article learning rate (`1e-4`) and batch size (`64`).
+- [ ] Add early stopping with patience `25` and restore the best validation
+  weights.
+- [ ] Disable the local-only scheduler and L2 regularization for the strict
+  article comparison unless the article documents equivalent behavior.
+- [ ] Run cross-entropy first, then focal loss, with the same split, seed,
+  architecture, and evaluation protocol.
+- [ ] Report accuracy together with per-class precision, recall, F1, macro-F1,
+  and the confusion matrix; do not use accuracy alone to claim reproduction.
+
+The current implementation uses SGD with momentum and a local scheduler, so
+the existing result is not yet a strict reproduction of the article's Adam
+protocol.
+
 ---
 
 ### Task 1: Add a tested NSL-KDD data module

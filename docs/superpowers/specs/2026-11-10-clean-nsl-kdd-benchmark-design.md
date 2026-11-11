@@ -13,6 +13,8 @@ Reusable behavior belongs in `src/`.
   one-hot labels.
 - `src/experiments/nsl_kdd.py` owns the article-aligned MLP configuration,
   model construction, and focal-loss construction.
+- `src/optim/adam.py` owns the reusable Adam update rule, including
+  bias-corrected moments and optional learning-rate decay.
 - `src/evaluation/classification.py` owns backend-compatible batched
   predictions and class-balanced metrics.
 - `src/losses/multiclass_focal_loss.py` owns the focal-loss forward and
@@ -35,3 +37,11 @@ Each benchmark notebook runs the shared setup first, then follows this order:
 
 The test set is never used for model selection. Data and model artifacts remain
 under benchmark-specific subdirectories of the shared Drive project.
+
+## Article-aligned comparison
+
+The baseline comparison must use Adam with `lr=1e-4`, `decay=0.004`,
+`batch_size=64`, and `epochs=250`. Cross-entropy is evaluated first; focal
+loss is then evaluated with the same model, split, seed, and reporting code.
+Accuracy is retained for comparison with the paper, but macro-F1 and
+per-class metrics are required to assess minority-class behavior.
