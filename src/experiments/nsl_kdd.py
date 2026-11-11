@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from src.activations import Dropout, ReLU, Softmax
 from src.core.backend import NumpyBackend
 from src.layers import Dense
-from src.losses import MulticlassFocalLoss
+from src.losses import MulticlassCrossEntropy, MulticlassFocalLoss
 from src.models import Sequential
 
 
@@ -81,3 +81,9 @@ def build_nsl_kdd_loss(
         alpha=config.alpha,
         backend=backend or NumpyBackend(),
     )
+
+
+def build_nsl_kdd_cross_entropy(
+    backend: NumpyBackend | None = None,
+) -> MulticlassCrossEntropy:
+    return MulticlassCrossEntropy(backend=backend or NumpyBackend())

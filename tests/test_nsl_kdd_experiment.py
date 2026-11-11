@@ -1,9 +1,11 @@
 from src.activations import Dropout, ReLU, Softmax
 from src.experiments.nsl_kdd import (
     NSLKDDModelConfig,
+    build_nsl_kdd_cross_entropy,
     build_nsl_kdd_loss,
     build_nsl_kdd_model,
 )
+from src.losses import MulticlassCrossEntropy
 from src.layers import Dense
 
 
@@ -25,3 +27,7 @@ def test_build_nsl_kdd_loss_uses_article_focal_defaults():
 
     assert loss.gamma == 2.0
     assert loss.alpha == 0.25
+
+
+def test_build_nsl_kdd_cross_entropy_returns_reference_loss():
+    assert isinstance(build_nsl_kdd_cross_entropy(), MulticlassCrossEntropy)
