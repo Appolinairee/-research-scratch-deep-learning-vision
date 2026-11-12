@@ -16,3 +16,6 @@ def test_classification_report_returns_macro_metrics_and_confusion_matrix():
     assert 0.0 <= report.accuracy <= 1.0
     assert 0.0 <= report.macro_f1 <= 1.0
     assert report.confusion_matrix.shape == (2, 2)
+    assert report.precision.shape == (2,)
+    assert report.recall.shape == (2,)
+    assert report.f1.shape == (2,)

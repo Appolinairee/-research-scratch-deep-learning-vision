@@ -7,7 +7,7 @@ from src.losses.binary_cross_entropy import BinaryCrossEntropy
 from src.losses.multiclass_cross_entropy import MulticlassCrossEntropy
 from src.metrics.classification import binary_accuracy, multiclass_accuracy
 from src.models.sequential import Sequential
-from src.optim import ReduceLROnPlateau, SGD
+from src.optim import Adam, ReduceLROnPlateau, SGD
 from src.training.single_neuron import build_batches
 from src.evaluation.classification import evaluate_multiclass
 from src.training.history import EpochMetrics, TrainingHistory
@@ -20,7 +20,7 @@ def train_binary_classifier(
     X: Array,
     y: Array,
     loss: BinaryCrossEntropy,
-    optimizer: SGD,
+    optimizer: SGD | Adam,
     epochs: int,
     batch_size: int,
     shuffle: bool = True,
@@ -71,9 +71,12 @@ def train_multiclass_classifier(
     validation_data: tuple[Array, Array] | None = None,
     regularizer: L2Regularization | None = None,
     scheduler: ReduceLROnPlateau | None = None,
+    early_stopping_patience: int | None = None,
 ) -> TrainingHistory:
     if epochs <= 0:
         raise ValueError("epochs must be positive")
+    if early_stopping_patience is not None and early_stopping_patience < 0:
+        raise ValueError("early_stopping_patience must be non-negative")
 
     backend = model.backend
     X = backend.asarray(X)
@@ -85,6 +88,9 @@ def train_multiclass_classifier(
         X_validation = y_validation = None
     rng = np.random.default_rng(seed)
     history = TrainingHistory()
+    best_validation_loss = float("inf")
+    best_weights = None
+    epochs_without_improvement = 0
 
     for epoch in range(epochs):
         model.train()
@@ -135,5 +141,25 @@ def train_multiclass_classifier(
                 relu_zero_fraction=diagnostics.relu_zero_fraction,
             )
         )
+        if validation_metrics is not None and early_stopping_patience is not None:
+            if validation_metrics.loss < best_validation_loss:
+                best_validation_loss = validation_metrics.loss
+                best_weights = [
+                    (
+                        backend.to_host(layer.W).copy(),
+                        backend.to_host(layer.b).copy(),
+                    )
+                    for layer in model.trainable_layers
+                ]
+                epochs_without_improvement = 0
+            else:
+                epochs_without_improvement += 1
+                if epochs_without_improvement >= early_stopping_patience:
+                    break
+
+    if best_weights is not None:
+        for layer, (weights, bias) in zip(model.trainable_layers, best_weights):
+            layer.W = backend.asarray(weights)
+            layer.b = backend.asarray(bias)
 
     return history

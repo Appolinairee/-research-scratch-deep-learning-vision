@@ -22,6 +22,9 @@ class ClassificationReport:
     macro_precision: float
     macro_recall: float
     macro_f1: float
+    precision: np.ndarray
+    recall: np.ndarray
+    f1: np.ndarray
     confusion_matrix: np.ndarray
 
 
@@ -75,6 +78,9 @@ def classification_report(
         macro_precision=float(np.mean(precision)),
         macro_recall=float(np.mean(recall)),
         macro_f1=float(np.mean(f1)),
+        precision=precision,
+        recall=recall,
+        f1=f1,
         confusion_matrix=matrix,
     )
 

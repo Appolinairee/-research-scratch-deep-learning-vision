@@ -6,7 +6,7 @@ import numpy as np
 
 from src.core.backend import NumpyBackend
 from src.core.types import Array
-from src.optim import SGD
+from src.optim import Adam, SGD
 
 @dataclass
 class Dense:
@@ -58,7 +58,7 @@ class Dense:
             optimizer = lr
         elif lr is not None:
             raise TypeError("provide optimizer or lr, not both")
-        if isinstance(optimizer, SGD):
+        if isinstance(optimizer, (Adam, SGD)):
             self.W = optimizer.step(self.W, self.dW, state_key=(id(self), "W"))
             self.b = optimizer.step(self.b, self.db, state_key=(id(self), "b"))
             return
