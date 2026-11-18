@@ -14,6 +14,8 @@ from src.layers import Dense
 from src.activations import ReLU, Softmax
 from src.models import Sequential
 import numpy as np
+import json
+from pathlib import Path
 
 
 def test_build_nsl_kdd_model_uses_article_architecture():
@@ -61,3 +63,20 @@ def test_extract_penultimate_activation_returns_output_before_last_dense():
 
     assert activation.shape == (2, 4)
     assert np.isfinite(activation).all()
+
+
+def test_colab_notebook_uses_available_public_comparison_api():
+    notebook_path = Path("notebooks/colab/nsl_kdd_focal_loss_mlp.ipynb")
+    notebook = json.loads(notebook_path.read_text())
+
+    sources = [
+        "".join(cell["source"])
+        for cell in notebook["cells"]
+        if cell["cell_type"] == "code"
+    ]
+    source_text = "\n".join(sources)
+
+    assert "run_nsl_kdd_comparison" in source_text
+    assert "extract_penultimate_activation" not in source_text
+    for source in sources:
+        compile(source, str(notebook_path), "exec")
