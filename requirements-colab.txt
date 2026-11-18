@@ -1,5 +1,6 @@
 cupy-cuda13x>=14.0
 torchvision>=0.17
 scikit-learn>=1.4
+pandas>=2.0
 tqdm>=4.66
 kaggle>=1.6
